@@ -20,7 +20,10 @@ public class AuthService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User signup(User user) {
+    public User signup(User user) throws Exception {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new Exception("Username already exists");
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         System.out.println("AuthService: Saving user: " + user.getUsername());
         return userRepository.save(user);
@@ -38,5 +41,9 @@ public class AuthService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    }
+
+    public boolean usernameExists(String username) {
+        return userRepository.findByUsername(username).isPresent();
     }
 }
